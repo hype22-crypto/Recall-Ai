@@ -1,0 +1,26 @@
+question,expect,keyword
+What is the difference between a class and an object?,answer,blueprint
+How many access specifiers does Java support?,answer,access specifiers
+What is byte code?,answer,platform-independent
+What are the types of variables in a class declaration?,answer,instance variable
+What are the two types of type casting?,answer,widening
+How does the ternary operator work?,answer,conditional
+What are the three types of control statements in Java?,answer,jumping
+What is the default value of boolean in Java?,answer,false
+What are renewable resources?,answer,replenished
+What causes eutrophication?,answer,algal
+What is acid mine drainage?,answer,sulfuric acid
+What is Integrated Pest Management?,answer,biological control
+How can deforestation be overcome?,answer,afforestation
+What is blue baby syndrome?,answer,methemoglobinemia
+What are non-renewable resources?,answer,finite
+What is polymorphism in Java?,no_claim,
+What is the capital of Australia?,no_claim,
+Explain inheritance in Java with an example.,no_claim,
+What is the Montreal Protocol?,no_claim,
+What is the syntax of a while loop in Java?,no_claim,
+What marks did I get in this assignment?,no_claim,
+Why did I choose Java for this assignment?,no_claim,
+What is the submission deadline for Environmental Studies?,no_claim,
+What is the default value of a String in Java?,no_claim,
+Explain the basics of machine learning.,no_claim,

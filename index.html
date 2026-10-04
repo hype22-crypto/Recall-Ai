@@ -1,0 +1,238 @@
+<!doctype html>
+<html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>RecallBuddy</title>
+<style>
+:root{color-scheme:dark;--bg:#000;--pan:#0c0d12;--ink:#eceef5;--mut:#9a9fb2;--line:#1d2030;--acc:#8b8bff;--onacc:#0b0b1e;--accs:#17183b;--hl:#5a4a08;--hlt:#fff1b8;--ok:#75e0a7;--okb:#0b3a26;--warn:#fdb022;--warnb:#3a2608;--bad:#fda29b;--badb:#3f1210;--serif:"Iowan Old Style","Palatino Linotype",Georgia,serif}
+
+*{box-sizing:border-box}html,body{height:100%}body{margin:0;background:var(--bg);color:var(--ink);font:15px/1.55 "Segoe UI Variable Text","Segoe UI",system-ui,sans-serif}
+:focus-visible{outline:2px solid var(--acc);outline-offset:2px}
+.app{display:grid;grid-template-columns:230px 1fr;height:100%}
+nav{background:var(--pan);border-right:1px solid var(--line);padding:22px 14px;display:flex;flex-direction:column;gap:4px;overflow:auto}
+.brand{font:700 24px var(--serif);padding:0 10px}.tag{color:var(--mut);font-size:13px;padding:2px 10px 18px}
+nav button{display:flex;justify-content:space-between;align-items:center;width:100%;text-align:left;background:none;border:0;color:var(--mut);padding:9px 10px;border-radius:8px;font:inherit;cursor:pointer}
+nav button:hover{background:var(--bg);color:var(--ink)}nav button.on{background:var(--accs);color:var(--acc);font-weight:600}
+.cnt{background:var(--acc);color:var(--onacc);border-radius:99px;font-size:12px;padding:0 7px;min-width:20px;text-align:center}.cnt:empty{display:none}
+.foot{margin-top:auto;color:var(--mut);font-size:12px;padding:14px 10px 0}
+main{overflow:auto;position:relative}.view{display:none;max-width:780px;margin:0 auto;padding:30px 24px 60px;min-height:100%}.view.on{display:flex;flex-direction:column}
+h1{font:700 28px/1.2 var(--serif);margin:0 0 4px}.sub{color:var(--mut);margin:0 0 22px;max-width:60ch}
+input,textarea,select{width:100%;padding:10px 12px;border:1px solid var(--line);border-radius:10px;background:var(--pan);color:inherit;font:inherit}
+textarea{min-height:110px;resize:vertical}
+button.p,button.s{border-radius:10px;padding:9px 16px;font:inherit;cursor:pointer;border:1px solid var(--acc)}
+button.p{background:var(--acc);color:var(--onacc)}button.s{background:none;color:var(--acc)}button:disabled{opacity:.5;cursor:wait}
+button.sm{padding:4px 10px;font-size:13px}.row{display:flex;gap:8px;align-items:center;flex-wrap:wrap}.row>input,.row>textarea{flex:1;min-width:200px}
+.card{background:var(--pan);border:1px solid var(--line);border-radius:14px;padding:18px;margin-bottom:18px}
+.msg{color:var(--mut);font-size:14px}.err{color:var(--bad)}.empty{color:var(--mut);padding:14px 0}
+mark{background:var(--hl);color:var(--hlt);padding:1px 3px;border-radius:3px;box-decoration-break:clone;-webkit-box-decoration-break:clone}
+.badge{display:inline-block;padding:3px 11px;border-radius:99px;font-weight:600;font-size:13px}
+.grounded{background:var(--okb);color:var(--ok)}.weak_evidence,.partial{background:var(--warnb);color:var(--warn)}.no_evidence,.missing{background:var(--badb);color:var(--bad)}.covered{background:var(--okb);color:var(--ok)}
+.cite{border-left:3px solid var(--hl);padding:2px 0 2px 12px;margin:14px 0}.cite a,a.ref{color:var(--acc);cursor:pointer;font-weight:600}.cite p{margin:4px 0 0}
+.item{display:flex;gap:12px;align-items:center;justify-content:space-between;border-top:1px solid var(--line);padding:10px 0;flex-wrap:wrap}.item:first-child{border-top:0}
+.item .t{flex:1;min-width:160px;cursor:pointer}.pill{font-size:12px;border:1px solid var(--line);border-radius:6px;padding:1px 8px;color:var(--mut)}
+#chatLog{flex:1;overflow:auto;display:flex;flex-direction:column;gap:12px;padding-bottom:14px;min-height:240px}
+.bub{padding:10px 14px;border-radius:14px;max-width:85%;white-space:pre-wrap}.me{align-self:flex-end;background:var(--acc);color:var(--onacc);border-bottom-right-radius:4px}
+.ai{align-self:flex-start;background:var(--pan);border:1px solid var(--line);border-bottom-left-radius:4px}.ai .meta{margin-top:8px;display:flex;gap:6px;flex-wrap:wrap;align-items:center;font-size:13px;color:var(--mut);white-space:normal}
+.chip{background:var(--hl);color:var(--hlt);border:0;border-radius:6px;padding:1px 8px;font:inherit;font-size:13px;cursor:pointer}
+.composer{position:sticky;bottom:0;background:var(--bg);padding-top:8px}.seg{display:inline-flex;border:1px solid var(--line);border-radius:10px;overflow:hidden;margin-bottom:8px}
+.seg button{background:var(--pan);border:0;color:var(--mut);padding:5px 14px;font:inherit;font-size:13px;cursor:pointer}.seg button.on{background:var(--accs);color:var(--acc);font-weight:600}
+.stats{display:flex;gap:10px;margin:14px 0}.stats div{flex:1;border-radius:12px;padding:10px 14px;font-weight:600}
+#drawer{position:fixed;top:0;right:0;bottom:0;width:min(440px,100%);background:var(--pan);border-left:1px solid var(--line);padding:24px;overflow:auto;transform:translateX(105%);transition:transform .2s;z-index:5}
+#drawer.open{transform:none}#drawer h2{font:700 22px/1.25 var(--serif);margin:0 0 4px}.body{white-space:pre-wrap;margin:16px 0}
+@media(max-width:800px){.app{grid-template-columns:1fr;grid-template-rows:1fr auto}nav{grid-row:2;flex-direction:row;padding:6px;border-right:0;border-top:1px solid var(--line);overflow-x:auto}
+.brand,.tag,.foot{display:none}nav button{white-space:nowrap;width:auto;gap:6px}.view{padding:20px 14px 40px}}
+@media(prefers-reduced-motion:reduce){#drawer{transition:none}}
+.md p{margin:0 0 .6em}.md p:last-child{margin:0}.md h4{margin:.2em 0 .4em;font:700 16px var(--serif)}.md ul,.md ol{margin:.2em 0 .6em;padding-left:1.3em}.md code{background:var(--accs);border-radius:4px;padding:0 4px;font-size:.9em}.md pre{background:var(--accs);border-radius:8px;padding:10px;overflow:auto}.md,.body.md{white-space:normal}
+.think{display:inline-block;width:56px;height:6px;border-radius:9px;vertical-align:middle;margin-right:8px;background:linear-gradient(90deg,var(--accs),var(--acc),var(--hl),var(--accs));background-size:200% 100%;animation:sh 1.2s linear infinite}@keyframes sh{to{background-position:-200% 0}}
+.acts{display:flex;gap:6px;align-items:center;margin-top:8px;white-space:normal}.acts button{background:none;border:0;color:var(--mut);font:inherit;font-size:12px;cursor:pointer;padding:2px 8px;border-radius:6px}.acts button:hover{background:var(--accs);color:var(--acc)}.acts .msg{font-size:12px;margin-left:auto}
+.hero{margin:auto 0;text-align:center;padding:20px 0}.hero h2{font:700 28px/1.25 var(--serif);margin:0 0 6px}.starters{display:flex;gap:8px;flex-wrap:wrap;justify-content:center;margin-top:18px}.starters button{background:var(--pan);border:1px solid var(--line);color:var(--ink);border-radius:99px;padding:7px 14px;font:inherit;font-size:14px;cursor:pointer}.starters button:hover{border-color:var(--acc);color:var(--acc)}
+#dot{display:inline-block;width:8px;height:8px;border-radius:50%;background:var(--mut);margin-right:6px}#dot.on{background:#12b76a}#dot.off{background:var(--bad)}kbd{border:1px solid var(--line);border-radius:5px;padding:0 5px;font-size:11px}
+#pal{position:fixed;inset:0;background:rgba(10,12,25,.45);display:flex;justify-content:center;align-items:flex-start;padding-top:14vh;z-index:9}#pal[hidden]{display:none}.palbox{background:var(--pan);border:1px solid var(--line);border-radius:14px;width:min(520px,92%);padding:10px}.palbox input{margin-bottom:6px}.palbox button{display:block;width:100%;text-align:left;background:none;border:0;color:var(--ink);padding:9px 10px;border-radius:8px;font:inherit;cursor:pointer}.palbox button.on,.palbox button:hover{background:var(--accs);color:var(--acc)}
+#navToggle{position:fixed;top:18px;left:182px;z-index:4;width:34px;height:34px;display:flex;align-items:center;justify-content:center;background:var(--pan);border:1px solid var(--line);color:var(--mut);border-radius:9px;cursor:pointer;transition:left .2s}
+#navToggle:hover{color:var(--acc);border-color:var(--acc)}.app{transition:grid-template-columns .2s}
+@media(min-width:801px){.app.collapsed{grid-template-columns:0 1fr}.app.collapsed nav{padding:0;border:0;visibility:hidden;overflow:hidden}.app.collapsed #navToggle{left:12px}.app.collapsed .view{padding-top:60px}}
+@media(max-width:800px){#navToggle{display:none}}
+@media(prefers-reduced-motion:reduce){#navToggle,.app{transition:none}}
+</style></head><body>
+<div class="app">
+<button id="navToggle" aria-label="Toggle sidebar" aria-expanded="true" title="Toggle sidebar (Ctrl+B)"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><rect x="3" y="4" width="18" height="16" rx="3"/><path d="M9 4v16"/></svg></button>
+<nav><div class="brand">RecallBuddy</div><div class="tag">Answers only from your notes.</div>
+<button data-v="ask" class="on">Ask my notes</button><button data-v="graph">Memory graph</button><button data-v="notes">Timeline &amp; notes</button>
+<button data-v="links">Suggested links<span class="cnt" id="lc"></span></button><button data-v="imp">Import a chat</button>
+<div class="foot"><span id="dot"></span><span id="stat">Connecting...</span><br>Local Gemma. Nothing leaves this computer.<br><br><kbd>Ctrl</kbd> <kbd>K</kbd> command palette</div></nav>
+<main>
+<section class="view on" id="v-ask"><h1>Ask my notes</h1><p class="sub">If your notes don't say it, I won't claim it. Evidence is highlighted. "Trace the reasoning" shows what led to a decision and what has no saved evidence.</p>
+ <div class="row"><input id="q" placeholder="e.g. Why did the servo stall?"><button class="p" id="askBtn">Ask</button><button class="s" id="whyBtn">Trace the reasoning</button></div><label class="msg" style="display:block;margin-top:10px"><input type="checkbox" id="useLlm" checked style="width:auto;margin-right:6px">Reword the answer with Gemma (your note shows first, then Gemma's wording replaces it)</label>
+ <div id="sug" style="margin-top:14px"></div>
+ <div id="answer" style="margin-top:18px"></div></section>
+
+<section class="view" id="v-graph"><h1>Memory graph</h1><p class="sub">Each row is a type of note, each column is one note in date order (oldest on the left). Arrows show how notes connect. Hover a note to focus its connections. Click it to open the original.</p>
+ <div class="row" style="margin-bottom:10px"><label class="msg"><input type="checkbox" id="gPend" checked style="width:auto;margin-right:6px">Show suggested links (dashed)</label><label class="msg"><input type="checkbox" id="gLinked" style="width:auto;margin-right:6px">Only notes with links</label><span class="msg" id="gstat"></span></div>
+ <div class="card" style="overflow:auto;padding:0" id="gbox"></div>
+ <div class="row msg" id="gleg" style="margin-top:12px;gap:14px"></div></section>
+
+<section class="view" id="v-notes"><h1>Notes</h1><p class="sub">Everything you've told me, in date order. Click a note to read it.</p>
+ <div class="card"><div class="row" style="margin-bottom:8px"><select id="ai" style="flex:1"><option value="">Which AI was this from?</option><option>ChatGPT</option><option>Gemini</option><option>Claude</option><option>Other</option></select>
+ <input id="title" placeholder="Title" style="flex:2"><input id="when" type="date" title="When did this happen? (optional)" style="flex:1"></div>
+ <textarea id="text" placeholder="Paste or type the note"></textarea>
+ <div class="row" style="margin-top:10px"><button class="p" id="addBtn">Save note</button><input id="file" type="file" accept=".txt,.md,.pdf" style="max-width:250px"><button class="s" id="upBtn">Upload file</button></div><div id="addMsg" class="msg" style="margin-top:8px"></div></div>
+ <div class="row" id="tf" style="margin-bottom:10px"></div><div class="card" id="tl"></div></section>
+
+<section class="view" id="v-links"><h1>Suggested links</h1><p class="sub">I found notes that seem connected. Nothing counts until you accept it.</p><div class="card" id="links"></div></section>
+<section class="view" id="v-imp"><h1>Import a chat</h1><p class="sub">Paste a ChatGPT or Gemini conversation with lines like "You:" and "ChatGPT:". Only your messages become notes. Remove names, phone numbers and passwords first.</p>
+ <div class="card"><div class="row" style="margin-bottom:8px"><select id="impAi" style="width:auto"><option>ChatGPT</option><option>Gemini</option><option>Claude</option><option>Other</option></select><button class="p" id="impBtn">Import my messages</button></div>
+ <textarea id="impText" placeholder="Paste the conversation here"></textarea><div id="impMsg" class="msg" style="margin-top:8px"></div></div></section>
+</main></div>
+<div id="pal" hidden><div class="palbox"><input id="palq" placeholder="Jump to a page or switch mode"><div id="pall"></div></div></div>
+<aside id="drawer" aria-label="Note"></aside>
+<script>
+const $=s=>document.querySelector(s);
+async function api(p,o){const r=await fetch(p,o);if(!r.ok){let d;try{d=(await r.json()).detail}catch{}throw new Error(d||r.statusText)}return r.json()}
+const post=(p,b)=>api(p,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(b)});
+function h(tag,a={},...k){const e=document.createElement(tag);for(const[x,v]of Object.entries(a)){if(x==='class')e.className=v;else if(x.startsWith('on'))e.addEventListener(x.slice(2),v);else e.setAttribute(x,v)}e.append(...k);return e}
+const LABEL={grounded:'Grounded in your notes',weak_evidence:'Weak evidence: closest notes shown, no claim made',no_evidence:"No evidence: I won't guess"};
+const RELS=['decision-for','tested-by','caused-by','solved-by','supports','related-to'];
+function show(v){if(v==='graph')drawGraph().catch(e=>$('#gbox').replaceChildren(h('p',{class:'err'},e.message)));document.querySelectorAll('.view').forEach(e=>e.classList.toggle('on',e.id==='v-'+v));document.querySelectorAll('nav button').forEach(b=>b.classList.toggle('on',b.dataset.v===v));$('main').scrollTop=0}
+document.querySelectorAll('nav button').forEach(b=>b.onclick=()=>show(b.dataset.v));
+const cite=c=>h('div',{class:'cite'},h('a',{onclick:()=>openMemory(c.memory_id,c.text)},c.title),h('span',{class:'msg'},` ${c.source||''}${c.page?' · page '+c.page:''} · match ${Math.round(c.score*100)}%`),h('p',{},h('mark',{},c.text)));
+
+async function ask(){
+  const q=$('#q').value.trim();if(!q)return;$('#sug').hidden=true;const out=$('#answer'),b=$('#askBtn'),t0=Date.now(),sec=()=>((Date.now()-t0)/1000).toFixed(1)+'s';
+  b.disabled=true;out.replaceChildren(h('p',{class:'msg'},'Searching your notes...'));
+  try{
+    const r=await post('/recall',{question:q,use_llm:false});  // instant: evidence + the best note
+    const ans=h('p',{style:'font-size:17px;margin:14px 0'},r.answer||''),note=h('p',{class:'msg'},sec()+' on this computer'),k=[h('span',{class:'badge '+r.state},LABEL[r.state])];
+    if(r.answer)k.push(ans);k.push(note);r.citations.forEach(c=>k.push(cite(c)));out.replaceChildren(...k);b.disabled=false;
+    if(r.state==='grounded'&&$('#useLlm').checked){
+      note.textContent=sec()+' · Gemma is rewording the answer...';
+      try{const g=await post('/recall',{question:q,use_llm:true});
+        if(g.state==='grounded'&&g.verified&&g.answer){ans.textContent=g.answer;note.textContent=sec()+' · reworded by Gemma, checked against your notes'}
+        else note.textContent=sec()+" · Gemma's wording didn't match your notes, so the note itself is shown"}
+      catch{note.textContent=sec()+' · Gemma unavailable, showing your note'}}
+  }catch(e){out.replaceChildren(h('p',{class:'err'},e.message))}
+  b.disabled=false}
+async function afterSave(r){$('#addMsg').textContent=`Saved. ${r.suggested_links.length} link suggestion(s) waiting in Suggested links.`;await refresh()}
+async function addNote(){
+  const ai=$('#ai').value,t=$('#title').value.trim(),text=$('#text').value.trim();if(!t||!text){$('#addMsg').textContent='Add a title and some text.';return}
+  $('#addBtn').disabled=true;$('#addMsg').textContent='Saving...';
+  try{await afterSave(await post('/memories',{title:(ai?`[${ai}] `:'')+t,text,captured_at:$('#when').value||null}));$('#title').value=$('#text').value=$('#when').value=''}catch(e){$('#addMsg').textContent=e.message}
+  $('#addBtn').disabled=false}
+async function upload(){
+  const f=$('#file').files[0];if(!f){$('#addMsg').textContent='Choose a .txt, .md or .pdf file first.';return}
+  const fd=new FormData();fd.append('file',f);$('#upBtn').disabled=true;$('#addMsg').textContent='Uploading...';
+  try{await afterSave(await api('/upload',{method:'POST',body:fd}));$('#file').value=''}catch(e){$('#addMsg').textContent=e.message}
+  $('#upBtn').disabled=false}
+async function decide(l,verb,sel){
+  if(verb==='accept'&&sel&&sel.value!==l.relation)await post(`/links/${l.id}/edit`,{relation:sel.value});else await api(`/links/${l.id}/${verb}`,{method:'POST'});await refresh()}
+async function openMemory(id,passage){
+  const m=await api('/memories/'+id),d=$('#drawer');
+  d.replaceChildren(h('h2',{},m.title),h('div',{class:'msg'},`${m.origin==='ai'?'AI-generated · ':''}${m.memory_type} · saved ${m.created_at}${m.source?' · '+m.source:''}`),
+    passage?h('div',{class:'cite'},h('b',{},'Cited passage'),h('p',{},h('mark',{},passage))):'',
+    m.origin==='ai'&&m.body?mdn(m.body,'body'):h('div',{class:'body'},...(m.body?[m.body]:m.chunks.map(c=>(c.page?`[page ${c.page}] `:'')+c.text+'\n\n'))),
+    ...(m.links.length?[h('b',{},'Accepted connections'),...m.links.map(l=>h('div',{class:'msg'},`${l.src_title} → ${l.relation} → ${l.dst_title}`))]:[]),
+    h('div',{class:'row',style:'margin-top:18px'},h('button',{class:'s sm',onclick:()=>download(id,m.title)},'Download .md'),h('button',{class:'s sm',onclick:()=>del(id)},'Delete'),h('button',{class:'p sm',onclick:closeDrawer},'Close')));
+  d.classList.add('open')}
+const closeDrawer=()=>$('#drawer').classList.remove('open');
+async function del(id){if(!confirm('Delete this note and its connections?'))return;await api('/memories/'+id,{method:'DELETE'});closeDrawer();await refresh()}
+async function download(id,title){const m=await api('/memories/'+id),a=document.createElement('a');a.href=URL.createObjectURL(new Blob([m.body||''],{type:'text/markdown'}));a.download=title.replace(/[^\w]+/g,'_')+'.md';a.click()}
+async function importChat(){
+  const text=$('#impText').value.trim();if(!text)return;$('#impBtn').disabled=true;$('#impMsg').textContent='Importing...';
+  try{const r=await post('/import',{text,source:$('#impAi').value});$('#impMsg').textContent=r.hint||`Saved ${r.saved} of your messages (found ${r.found}).`;if(r.saved){$('#impText').value='';await refresh()}}catch(e){$('#impMsg').textContent=e.message}
+  $('#impBtn').disabled=false}
+let typeFilter='all';
+const TYPES={idea:['💡','#f5c542'],research:['🔎','#5ab0ff'],decision:['⚙️','#8b8bff'],problem:['⚠️','#ff7a70'],solution:['🔧','#4cd7a0'],result:['✅','#7ee0c3'],note:['📝','#9a9fb2'],study:['📘','#9a9fb2']};
+async function refresh(){
+  const [tl,links]=await Promise.all([api('/timeline'),api('/links/pending')]);
+  $('#lc').textContent=links.length||'';suggest(tl);
+  $('#tf').replaceChildren(...['all',...Object.keys(TYPES).filter(t=>t!=='study')].map(t=>h('button',{class:'s sm'+(t===typeFilter?' on':''),onclick:()=>{typeFilter=t;refresh()}},t==='all'?'All':TYPES[t][0]+' '+t)));
+  const rows=tl.filter(n=>typeFilter==='all'||n.memory_type===typeFilter);
+  $('#tl').replaceChildren(...(rows.length?rows.map(n=>h('div',{class:'item'},h('span',{class:'msg'},n.created_at.slice(0,10)),h('span',{class:'t',onclick:()=>openMemory(n.id)},n.title),
+    h('span',{class:'pill',style:'border-color:'+(TYPES[n.memory_type]||[0,'#555'])[1]},(TYPES[n.memory_type]||[''])[0]+' '+n.memory_type),h('button',{class:'s sm',onclick:()=>del(n.id)},'Delete'))):[h('p',{class:'empty'},'No notes here yet. Save one above or import a conversation.')]));
+  $('#links').replaceChildren(...(links.length?links.map(l=>{
+    const sel=h('select',{style:'width:auto;padding:4px 8px'},...RELS.map(r=>{const o=h('option',{},r);if(r===l.relation)o.selected=true;return o}));
+    return h('div',{},h('div',{class:'item'},h('span',{class:'t'},l.src_title+' → ',sel,' → '+l.dst_title),h('button',{class:'p sm',onclick:()=>decide(l,'accept',sel)},'Accept'),h('button',{class:'s sm',onclick:()=>decide(l,'reject')},'Reject')),
+      h('div',{class:'msg',style:'white-space:pre-line;padding:0 0 12px'},'Why suggested:\n'+(l.reason||'')))}):[h('p',{class:'empty'},'No suggestions right now. They appear when you save notes that connect.')]))}
+async function why(){
+  const q=$('#q').value.trim();if(!q)return;$('#sug').hidden=true;const out=$('#answer');out.replaceChildren(h('p',{class:'msg'},'Tracing...'));
+  try{const r=await post('/why',{question:q});
+    if(!r.decision){out.replaceChildren(h('span',{class:'badge no_evidence'},LABEL.no_evidence),h('p',{},r.message));return}
+    const d=r.decision,ic=t=>(TYPES[t]||[''])[0],k=[h('span',{class:'badge '+r.state},LABEL[r.state]),
+      h('div',{class:'cite'},h('b',{},ic(d.type)+' '+d.title),h('span',{class:'msg'},` ${d.type} · ${d.date}${d.source?' · '+d.source:''}`),h('p',{},h('mark',{},d.text)),h('a',{onclick:()=>openMemory(d.memory_id,d.text)},'Open original'))];
+    if(r.chain.length){k.push(h('h4',{style:'margin:16px 0 4px'},'Connected evidence you approved'));r.chain.forEach(c=>k.push(h('div',{class:'cite'},h('b',{},ic(c.type)+' '+c.title),h('span',{class:'msg'},` ${c.date} · ${c.relation}`),h('p',{},c.text),h('a',{onclick:()=>openMemory(c.memory_id,c.text)},'Open original'))))}
+    if(r.missing.length)k.push(h('div',{class:'cite'},h('b',{},'No saved evidence for:'),h('ul',{},...r.missing.map(x=>h('li',{},x)))));
+    if(r.pending)k.push(h('p',{class:'msg'},`${r.pending} suggested link(s) for this note are waiting in Suggested links.`));
+    out.replaceChildren(...k)}catch(e){out.replaceChildren(h('p',{class:'err'},e.message))}}
+const LANES=['idea','research','decision','problem','solution','result','note'];
+const REL_COL={'decision-for':'#8b8bff','tested-by':'#5ab0ff','caused-by':'#ff7a70','solved-by':'#4cd7a0','supports':'#f5c542','related-to':'#9a9fb2'};
+async function drawGraph(){
+  const g=await api('/graph'),box=$('#gbox'),showPend=$('#gPend').checked,onlyLinked=$('#gLinked').checked;
+  const links=g.links.filter(l=>showPend||l.status==='accepted'),linked=new Set(links.flatMap(l=>[l.src,l.dst]));
+  const nodes=g.nodes.filter(m=>!onlyLinked||linked.has(m.id)),ty=m=>LANES.includes(m.memory_type)?m.memory_type:'note';
+  $('#gleg').replaceChildren(h('span',{},'Solid line = you accepted it · dashed = waiting for your approval'),...Object.entries(REL_COL).map(([r,c])=>h('span',{},h('b',{style:'color:'+c},'━ '),r)));
+  if(!nodes.length){$('#gstat').textContent='';box.replaceChildren(h('p',{class:'empty'},'Nothing to show. Save notes, or untick "Only notes with links".'));return}
+  const lanes=LANES.filter(t=>nodes.some(m=>ty(m)===t)),G=130,CW=150,LH=100,TOP=44,W=G+nodes.length*CW+20,H=TOP+lanes.length*LH+8,R=21,NS='http://www.w3.org/2000/svg';
+  const el=(t,a={},...k)=>{const e=document.createElementNS(NS,t);for(const[x,v]of Object.entries(a))e.setAttribute(x,v);e.append(...k);return e};
+  const pos={};nodes.forEach((m,i)=>{pos[m.id]=[G+CW*i+CW/2,TOP+lanes.indexOf(ty(m))*LH+LH/2]});
+  const svg=el('svg',{viewBox:`0 0 ${W} ${H}`,width:W,height:H,style:'display:block'});
+  const defs=el('defs');Object.entries(REL_COL).forEach(([r,c])=>defs.append(el('marker',{id:'ar-'+r,viewBox:'0 0 10 10',refX:'9',refY:'5',markerWidth:'7',markerHeight:'7',orient:'auto'},el('path',{d:'M0 0L10 5L0 10z',fill:c}))));svg.append(defs);
+  lanes.forEach((t,i)=>{const y=TOP+i*LH;svg.append(el('rect',{x:0,y,width:W,height:LH,fill:i%2?'rgba(255,255,255,.00)':'rgba(255,255,255,.035)'}),el('line',{x1:0,y1:y,x2:W,y2:y,stroke:'#1d2030'}),
+    el('text',{x:14,y:y+LH/2+5,fill:TYPES[t][1],'font-size':14,'font-weight':600},TYPES[t][0]+' '+t))});
+  svg.append(el('line',{x1:G,y1:0,x2:G,y2:H,stroke:'#1d2030'}));
+  nodes.forEach((m,i)=>{const x=pos[m.id][0];svg.append(el('line',{x1:x,y1:TOP-6,x2:x,y2:H,stroke:'#1d2030','stroke-dasharray':'2 5'}),el('text',{x,y:26,fill:'#9a9fb2','font-size':11,'text-anchor':'middle'},m.created_at.slice(0,10)))});
+  const edges=[];links.forEach((l,i)=>{
+    const [x1,y1]=pos[l.src],[x2,y2]=pos[l.dst],dx=x2-x1,dy=y2-y1,len=Math.hypot(dx,dy)||1,ux=dx/len,uy=dy/len,c=REL_COL[l.relation]||'#9a9fb2',pend=l.status==='pending';
+    const bend=(i%2?1:-1)*(26+(i%3)*10),cx=(x1+x2)/2-uy*bend,cy=(y1+y2)/2+ux*bend;
+    const sx=x1+ux*(R+3),sy=y1+uy*(R+3),ex=x2-ux*(R+8),ey=y2-uy*(R+8),lx=.25*sx+.5*cx+.25*ex,ly=.25*sy+.5*cy+.25*ey,w=l.relation.length*6.4+14;
+    const gE=el('g',{class:'e'},el('path',{d:`M${sx} ${sy} Q${cx} ${cy} ${ex} ${ey}`,fill:'none',stroke:c,'stroke-width':pend?1.8:2.8,'stroke-dasharray':pend?'6 5':'0',opacity:pend?.75:1,'marker-end':`url(#ar-${l.relation})`}),
+      el('rect',{x:lx-w/2,y:ly-9,width:w,height:18,rx:9,fill:'#0c0d12',stroke:c,'stroke-width':1}),el('text',{x:lx,y:ly+4,fill:'#eceef5','font-size':11,'text-anchor':'middle'},l.relation));
+    gE.dataset.s=l.src;gE.dataset.d=l.dst;edges.push(gE);svg.append(gE)});
+  const nds=[];nodes.forEach(m=>{const [x,y]=pos[m.id],t=ty(m),c=TYPES[t][1],words=m.title.split(/\s+/),l1=[],l2=[];let cur=l1,len=0;
+    for(const w of words){if(len+w.length>16&&cur===l1){cur=l2;len=0}cur.push(w);len+=w.length+1}
+    let a=l1.join(' '),b=l2.join(' ');if(a.length>18)a=a.slice(0,17)+'…';if(b.length>18)b=b.slice(0,17)+'…';
+    const gN=el('g',{class:'n',style:'cursor:pointer'},el('title',{},`${m.title}\n${t} · ${m.created_at.slice(0,10)}`),el('circle',{cx:x,cy:y,r:R,fill:c,'fill-opacity':.2,stroke:c,'stroke-width':2.5}),
+      el('text',{x,y:y+6,'text-anchor':'middle','font-size':17},TYPES[t][0]),el('text',{x,y:y+R+16,fill:'#eceef5','font-size':12,'text-anchor':'middle'},a),el('text',{x,y:y+R+30,fill:'#9a9fb2','font-size':11,'text-anchor':'middle'},b));
+    gN.dataset.id=m.id;nds.push(gN);svg.append(gN);
+    gN.addEventListener('click',()=>openMemory(m.id));
+    gN.addEventListener('mouseenter',()=>{const near=new Set([m.id]);links.forEach(l=>{if(l.src===m.id)near.add(l.dst);if(l.dst===m.id)near.add(l.src)});
+      nds.forEach(n=>n.style.opacity=near.has(+n.dataset.id)?1:.18);edges.forEach(e=>e.style.opacity=(+e.dataset.s===m.id||+e.dataset.d===m.id)?1:.08)});
+    gN.addEventListener('mouseleave',()=>{nds.forEach(n=>n.style.opacity=1);edges.forEach(e=>e.style.opacity=1)})});
+  $('#gstat').textContent=`${nodes.length} notes · ${links.filter(l=>l.status==='accepted').length} accepted · ${links.filter(l=>l.status==='pending').length} suggested`;
+  box.replaceChildren(svg)}
+let lastSug=[];
+const cleanTitle=t=>t.replace(/^\[[^\]]+\]\s*/,'').replace(/\s+/g,' ').trim().slice(0,60);
+const sugRow=label=>lastSug.length?h('div',{style:'margin-top:14px'},h('div',{class:'msg'},label),h('div',{class:'row',style:'flex-wrap:wrap;gap:8px;margin-top:6px'},...lastSug.map(s=>h('button',{class:'chip',onclick:()=>runQ(s.q,s.why)},(TYPES[s.type]||[''])[0]+' '+s.q)))):'';
+function suggest(tl){
+  const per={},out=[],F={decision:['Why did I decide: ',true],problem:['What caused: ',false],solution:['How did I solve: ',false],research:['What did I find about: ',false],result:['What did the test show: ',false]};
+  [...tl].reverse().forEach(n=>{const t=cleanTitle(n.title),f=F[n.memory_type];if(!f||t.length<6)return;
+    per[n.memory_type]=(per[n.memory_type]||0)+1;if(per[n.memory_type]<=2)out.push({q:f[0]+t+'?',why:f[1],type:n.memory_type})});
+  lastSug=out.slice(0,6);$('#sug').replaceChildren(sugRow('Suggested from your notes')||h('p',{class:'msg'},'Suggestions appear here once you save a few notes.'))}
+function runQ(q,useWhy){$('#q').value=q;useWhy?why():ask()}
+$('#q').addEventListener('input',()=>{if(!$('#q').value.trim())$('#sug').hidden=false});$('#askBtn').onclick=ask;$('#whyBtn').onclick=why;$('#gPend').onchange=$('#gLinked').onchange=()=>drawGraph();$('#q').addEventListener('keydown',e=>{if(e.key==='Enter')ask()});
+$('#impBtn').onclick=importChat;$('#addBtn').onclick=addNote;$('#upBtn').onclick=upload;
+document.addEventListener('keydown',e=>{if(e.key==='Escape')closeDrawer()});
+function md(t){
+  const esc=x=>x.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+  const inl=x=>esc(x).replace(/`([^`]+)`/g,'<code>$1</code>').replace(/\*\*([^*]+)\*\*/g,'<b>$1</b>').replace(/(^|[\s(])\*([^*\n]+)\*/g,'$1<i>$2</i>');
+  let out='',list=null,code=null;
+  for(const raw of t.split('\n')){
+    if(raw.trim().startsWith('```')){if(code===null)code=[];else{out+='<pre>'+esc(code.join('\n'))+'</pre>';code=null}continue}
+    if(code){code.push(raw);continue}
+    const li=raw.match(/^\s*(?:[-*\u2022]|\d+[.)])\s+(.*)/);
+    if(li){const tag=/^\s*\d/.test(raw)?'ol':'ul';if(list!==tag){out+=(list?`</${list}>`:'')+`<${tag}>`;list=tag}out+='<li>'+inl(li[1])+'</li>';continue}
+    if(list){out+=`</${list}>`;list=null}
+    const hd=raw.match(/^#{1,6}\s+(.*)/);
+    if(hd)out+='<h4>'+inl(hd[1])+'</h4>';else if(raw.trim())out+='<p>'+inl(raw)+'</p>'}
+  if(list)out+=`</${list}>`;if(code)out+='<pre>'+esc(code.join('\n'))+'</pre>';return out}
+const mdn=(t,cls='')=>{const d=h('div',{class:('md '+cls).trim()});d.innerHTML=md(t);return d};
+const CMDS=[['ask','Ask my notes'],['graph','Memory graph'],['notes','Timeline & notes'],['links','Suggested links'],['imp','Import a chat']].map(([v,n])=>['Go to '+n,()=>show(v)]);
+function sidebar(open){document.querySelector('.app').classList.toggle('collapsed',!open);$('#navToggle').setAttribute('aria-expanded',open);try{localStorage.setItem('rb_nav',open?'1':'0')}catch{}}
+$('#navToggle').onclick=()=>sidebar(document.querySelector('.app').classList.contains('collapsed'));
+try{if(localStorage.getItem('rb_nav')==='0')sidebar(false)}catch{}
+CMDS.push(['Toggle sidebar',()=>$('#navToggle').click()]);
+document.addEventListener('keydown',e=>{if((e.ctrlKey||e.metaKey)&&e.key.toLowerCase()==='b'){e.preventDefault();$('#navToggle').click()}});
+function pal(open){$('#pal').hidden=!open;if(open){$('#palq').value='';palList();$('#palq').focus()}}
+function palList(){const q=$('#palq').value.toLowerCase();$('#pall').replaceChildren(...CMDS.filter(c=>c[0].toLowerCase().includes(q)).map((c,i)=>h('button',{class:i?'':'on',onclick:()=>{pal(false);c[1]()}},c[0])))}
+$('#palq').addEventListener('input',palList);$('#palq').addEventListener('keydown',e=>{if(e.key==='Enter')$('#pall button')?.click()});
+$('#pal').addEventListener('click',e=>{if(e.target.id==='pal')pal(false)});
+document.addEventListener('keydown',e=>{if((e.ctrlKey||e.metaKey)&&e.key.toLowerCase()==='k'){e.preventDefault();pal(true)}if(e.key==='Escape')pal(false)});
+fetch('/health').then(r=>{if(!r.ok)throw 0;$('#dot').className='on';$('#stat').textContent='Local server online'}).catch(()=>{$('#dot').className='off';$('#stat').textContent='Server offline'});
+refresh().catch(e=>$('#addMsg').textContent=e.message);
+</script></body></html>
